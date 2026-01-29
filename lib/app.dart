@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kitahack_2026/core/theme/theme.dart';
 import 'package:kitahack_2026/core/theme/util.dart';
+import 'package:kitahack_2026/features/auth/presentation/auth_gate.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -16,7 +17,7 @@ class App extends StatelessWidget {
       theme: theme.light(),
       darkTheme: theme.dark(),
       themeMode: ThemeMode.light,
-      home: Scaffold(body: Center(child: Text("Text"))),
+      home: const AuthGate(),
     );
   }
 }
