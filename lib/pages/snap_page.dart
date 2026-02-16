@@ -24,14 +24,69 @@ class SnapPage extends StatelessWidget {
             child: Container(
               color: Colors.grey[850],
               child: const Center(
-                child: Text('Camera Preview', style: TextStyle(color: Colors.white54)),
+                child: Text(
+                  'Camera Preview',
+                  style: TextStyle(color: Colors.white54),
+                ),
               ),
             ),
           ),
-          Positioned(top: 130, left: 40, child: Container(width: 40, height: 40, decoration: const BoxDecoration(border: Border(top: BorderSide(color: kMangoAccent, width: 3), left: BorderSide(color: kMangoAccent, width: 3))))),
-          Positioned(top: 130, right: 40, child: Container(width: 40, height: 40, decoration: const BoxDecoration(border: Border(top: BorderSide(color: kMangoAccent, width: 3), right: BorderSide(color: kMangoAccent, width: 3))))),
-          Positioned(bottom: 250, left: 40, child: Container(width: 40, height: 40, decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: kMangoAccent, width: 3), left: BorderSide(color: kMangoAccent, width: 3))))),
-          Positioned(bottom: 250, right: 40, child: Container(width: 40, height: 40, decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: kMangoAccent, width: 3), right: BorderSide(color: kMangoAccent, width: 3))))),
+          Positioned(
+            top: 130,
+            left: 40,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: kMangoAccent, width: 3),
+                  left: BorderSide(color: kMangoAccent, width: 3),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 130,
+            right: 40,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: kMangoAccent, width: 3),
+                  right: BorderSide(color: kMangoAccent, width: 3),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 250,
+            left: 40,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: kMangoAccent, width: 3),
+                  left: BorderSide(color: kMangoAccent, width: 3),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 250,
+            right: 40,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: kMangoAccent, width: 3),
+                  right: BorderSide(color: kMangoAccent, width: 3),
+                ),
+              ),
+            ),
+          ),
           Positioned(
             bottom: 40,
             left: 0,
@@ -61,7 +116,11 @@ class SnapPage extends StatelessWidget {
                         padding: const EdgeInsets.all(4),
                         child: const CircleAvatar(
                           backgroundColor: kMangoPrimary,
-                          child: Icon(Icons.camera_alt, color: Colors.white, size: 35),
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 35,
+                          ),
                         ),
                       ),
                     ),
@@ -85,15 +144,24 @@ class SnapPage extends StatelessWidget {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        child: const Text('Gallery', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        child: const Text(
+                          'Gallery',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
