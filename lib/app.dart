@@ -18,7 +18,7 @@ class App extends StatelessWidget {
       // To modify theme, head to https://material-foundation.github.io/material-theme-builder/ 
       title: 'SnapMango',
       debugShowCheckedModeBanner: false,
-      theme: mangoTheme(), // theme.light(), <-- i changed this temporary -- wilson
+      theme: theme.light(), // theme.light(), <-- i changed this temporary -- wilson
       darkTheme: theme.dark(),
       themeMode: ThemeMode.light,
       home: const AuthGate(),
