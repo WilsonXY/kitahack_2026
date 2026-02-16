@@ -1,11 +1,112 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
 
-class SnapPage extends StatelessWidget {
+class SnapPage extends StatefulWidget {
   const SnapPage({super.key});
 
   @override
+  State<SnapPage> createState() => _SnapPageState();
+}
+
+class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver{
+
+  CameraController? _controller;
+  bool _isCameraInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initCamera();
+  }
+
+  Future<void> _initCamera() async {
+    final cameras = await availableCameras();
+    final CameraDescription camera = cameras.firstWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.back,
+      orElse: () => cameras.first, // Fallback to first camera if no back camera found
+    );
+
+    _controller = CameraController(
+      camera,
+      ResolutionPreset.high, 
+      enableAudio: false,
+    );
+
+    try {
+      await _controller!.initialize();
+      if (mounted) {
+        setState(() => _isCameraInitialized = true);
+      }
+    } catch (e) {
+      debugPrint("Camera error: $e");
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final CameraController? cameraController = _controller;
+    if (cameraController == null || !cameraController.value.isInitialized) return;
+
+    if (state == AppLifecycleState.inactive) {
+      cameraController.dispose();
+    } else if (state == AppLifecycleState.resumed) {
+      _initCamera();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _takePicture() async {
+    if (!_isCameraInitialized || _controller == null) return;
+
+    try {
+      final XFile image = await _controller!.takePicture();
+      if (!mounted) return;
+
+      // Navigate to result
+      Navigator.pushReplacementNamed(
+        context, 
+        '/result', 
+        arguments: image.path
+      );
+    } catch (e) {
+      debugPrint("Error taking picture: $e");
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (image != null && mounted) {
+        Navigator.pushReplacementNamed(
+          context, 
+          '/result', 
+          arguments: image.path
+        );
+      }
+    } catch (e) {
+      debugPrint("Gallery error: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!_isCameraInitialized || _controller == null) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -21,15 +122,7 @@ class SnapPage extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Container(
-              color: Colors.grey[850],
-              child: const Center(
-                child: Text(
-                  'Camera Preview',
-                  style: TextStyle(color: Colors.white54),
-                ),
-              ),
-            ),
+            child: CameraPreview(_controller!),
           ),
           Positioned(
             top: 130,
@@ -103,12 +196,7 @@ class SnapPage extends StatelessWidget {
                     ),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(100),
-                      onTap: () {
-                        Future.delayed(const Duration(milliseconds: 100), () {
-                          if (!context.mounted) return;
-                          Navigator.pushReplacementNamed(context, '/result');
-                        });
-                      },
+                      onTap: _takePicture,
                       splashColor: kMangoPrimary,
                       child: Container(
                         width: 90,
@@ -137,12 +225,7 @@ class SnapPage extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(30),
                       splashColor: kMangoAccent.withValues(alpha: .8),
-                      onTap: () {
-                        Future.delayed(const Duration(milliseconds: 100), () {
-                          if (!context.mounted) return;
-                          Navigator.pushReplacementNamed(context, '/result');
-                        });
-                      },
+                      onTap: _pickFromGallery,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
