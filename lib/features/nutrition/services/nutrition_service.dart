@@ -9,7 +9,7 @@ class NutritionService {
 
   NutritionService({required this.apiKey}) {
     _model = GenerativeModel(
-      model: 'gemini-2.5-pro',
+      model: 'gemini-3-flash-preview',
       apiKey: apiKey,
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
