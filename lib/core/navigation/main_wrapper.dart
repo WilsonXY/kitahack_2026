@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kitahack_2026/features/dashboard/presentation/main_page.dart';
 import 'package:kitahack_2026/features/nutrition/presentation/snap_page.dart';
+import 'package:kitahack_2026/features/profile/presentation/profile_page.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -14,8 +15,8 @@ class _MainWrapperState extends State<MainWrapper> {
 
   final List<Widget> _screens = [
     const MainPage(), // Home Page
-    const SnapPage(), // TODO : Snap Page
-    const Center(child: Text("3rd Page")), // TODO: Profile Page
+    const SnapPage(), // Snap Page
+    const ProfilePage(), // Profile Page
     // const ProfileScreen(), // Profile Page
   ];
 
