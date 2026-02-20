@@ -1,3 +1,5 @@
+// Mock Design
+
 import 'package:firebase_auth/firebase_auth.dart'; // Import this
 import 'package:flutter/material.dart';
 

@@ -37,7 +37,7 @@ class MainPage extends StatelessWidget {
                         });
                       },
                       splashColor: kMangoAccent.withValues(alpha: 0.5),
-                      highlightColor: Colors.transparent,
+                      // highlightColor: Colors.transparent,
                       child: SizedBox(
                         width: 180,
                         height: 180,
