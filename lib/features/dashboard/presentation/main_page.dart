@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
-import 'package:kitahack_2026/widgets/snapmango_drawer.dart';
 import 'package:kitahack_2026/widgets/history_summary_item.dart';
 
 class MainPage extends StatelessWidget {
@@ -13,7 +12,7 @@ class MainPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('SnapMango!'),
       ),
-      drawer: const SnapMangoDrawer(),
+      // drawer: const SnapMangoDrawer(), // Removed Drawer 
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
