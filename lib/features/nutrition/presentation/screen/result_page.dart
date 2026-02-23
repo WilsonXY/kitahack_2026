@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:kitahack_2026/core/navigation/main_wrapper.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
 import 'package:kitahack_2026/features/nutrition/presentation/viewmodel/result_viewmodel.dart';
 import 'package:kitahack_2026/widgets/social_icon.dart';
@@ -288,7 +287,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/main');
+                        Navigator.popUntil(context, (route) => route.isFirst);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kMangoPrimary,
@@ -468,7 +467,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         duration: Duration(milliseconds: 500),
       ),
     );
-    Navigator.popAndPushNamed(context, '/main',);
+    Navigator.popUntil(context, (route) => route.isFirst);
   }
 
   Widget _buildIconButton(IconData icon, VoidCallback onTap) {
