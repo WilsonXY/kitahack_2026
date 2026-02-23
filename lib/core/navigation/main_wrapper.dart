@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kitahack_2026/features/dashboard/presentation/main_page.dart';
-import 'package:kitahack_2026/features/nutrition/presentation/snap_page.dart';
+import 'package:kitahack_2026/features/nutrition/presentation/screen/snap_page.dart';
 import 'package:kitahack_2026/features/profile/presentation/profile_page.dart';
 
 class MainWrapper extends StatefulWidget {
