@@ -25,23 +25,36 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
     setState(() {
       _useCamera = true;
     });
+
     final cameras = await availableCameras();
+
+    // SAFETY CHECK 1: Did the user change tabs while waiting for hardware?
+    if (!mounted) return;
+
     final CameraDescription camera = cameras.firstWhere(
       (camera) => camera.lensDirection == CameraLensDirection.back,
       orElse: () => cameras.first,
     );
 
-    _controller = CameraController(
+    // Create a local controller instance first
+    final tempController = CameraController(
       camera,
       ResolutionPreset.high,
       enableAudio: false,
     );
 
+    _controller = tempController;
+
     try {
-      await _controller!.initialize();
-      if (mounted) {
-        setState(() => _isCameraInitialized = true);
+      await tempController.initialize();
+
+      // SAFETY CHECK 2: Did the user change tabs while the camera was warming up?
+      if (!mounted) {
+        tempController.dispose(); // Kill the ghost camera
+        return;
       }
+
+      setState(() => _isCameraInitialized = true);
     } catch (e) {
       debugPrint("Camera error: $e");
       if (mounted) {
@@ -56,7 +69,8 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final CameraController? cameraController = _controller;
-    if (cameraController == null || !cameraController.value.isInitialized) return;
+    if (cameraController == null || !cameraController.value.isInitialized)
+      return;
 
     if (state == AppLifecycleState.inactive) {
       cameraController.dispose();
@@ -91,7 +105,11 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/result', arguments: image.path);
+        Navigator.pushReplacementNamed(
+          context,
+          '/result',
+          arguments: image.path,
+        );
       }
     } catch (e) {
       debugPrint("Gallery error: $e");
@@ -100,21 +118,21 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (!_useCamera) {
       return _buildSelectionScreen();
     }
 
     if (!_isCameraInitialized || _controller == null) {
       return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator(color: kMangoPrimary)),
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -131,9 +149,7 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: CameraPreview(_controller!),
-          ),
+          Positioned.fill(child: CameraPreview(_controller!)),
           _buildCameraOverlay(),
           Positioned(
             bottom: 40,
@@ -179,13 +195,16 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: kMangoBackground,
       appBar: AppBar(
-        title: const Text('Capture Image', style: TextStyle(color: kTextBrown, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Capture Image',
+          style: TextStyle(color: kTextBrown, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kTextBrown),
-          onPressed: () => Navigator.pop(context),
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: kTextBrown),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -193,12 +212,20 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.photo_camera_rounded, size: 100, color: kMangoPrimary),
+            const Icon(
+              Icons.photo_camera_rounded,
+              size: 100,
+              color: kMangoPrimary,
+            ),
             const SizedBox(height: 40),
             const Text(
               'How would you like to add your food?',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kTextBrown),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: kTextBrown,
+              ),
             ),
             const SizedBox(height: 40),
             ElevatedButton.icon(
@@ -209,19 +236,26 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
                 backgroundColor: kMangoPrimary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: _pickFromGallery,
               icon: const Icon(Icons.photo_library),
-              label: const Text('Upload from Gallery', style: TextStyle(fontSize: 18)),
+              label: const Text(
+                'Upload from Gallery',
+                style: TextStyle(fontSize: 18),
+              ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: kMangoPrimary,
                 side: const BorderSide(color: kMangoPrimary, width: 2),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
