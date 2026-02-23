@@ -50,7 +50,7 @@ class _ResultPageState extends State<ResultPage> {
     try {
       final XFile file = XFile(path);
       final bytes = await file.readAsBytes();
-      
+
       setState(() {
         _imageBytes = bytes;
       });
@@ -80,8 +80,8 @@ class _ResultPageState extends State<ResultPage> {
       body: _isLoading
           ? _buildLoadingState()
           : _error != null
-              ? _buildErrorState()
-              : _buildResultState(),
+          ? _buildErrorState()
+          : _buildResultState(),
     );
   }
 
@@ -94,10 +94,17 @@ class _ResultPageState extends State<ResultPage> {
           const SizedBox(height: 20),
           Text(
             'Analyzing your food...',
-            style: TextStyle(color: kTextBrown, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: kTextBrown,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
-          const Text('Our AI agents are working together...', style: TextStyle(color: Colors.grey)),
+          const Text(
+            'Our AI agents are working together...',
+            style: TextStyle(color: Colors.grey),
+          ),
         ],
       ),
     );
@@ -112,12 +119,16 @@ class _ResultPageState extends State<ResultPage> {
           children: [
             const Icon(Icons.error_outline, size: 60, color: Colors.red),
             const SizedBox(height: 16),
-            Text(_error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Go Back'),
-            )
+            ),
           ],
         ),
       ),
@@ -127,7 +138,9 @@ class _ResultPageState extends State<ResultPage> {
   Widget _buildResultState() {
     if (_result == null) return const SizedBox.shrink();
 
-    final jsonString = const JsonEncoder.withIndent('  ').convert(_result!.toJson());
+    final jsonString = const JsonEncoder.withIndent(
+      '  ',
+    ).convert(_result!.toJson());
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -138,21 +151,22 @@ class _ResultPageState extends State<ResultPage> {
             width: 200,
             height: 200,
             decoration: BoxDecoration(
-                color: kPlaceholderGrey,
-                borderRadius: BorderRadius.circular(12),
-                image: _imageBytes != null
-                    ? DecorationImage(
-                        image: MemoryImage(_imageBytes!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  )
-                ]),
+              color: kPlaceholderGrey,
+              borderRadius: BorderRadius.circular(12),
+              image: _imageBytes != null
+                  ? DecorationImage(
+                      image: MemoryImage(_imageBytes!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
             child: _imageBytes == null
                 ? const Icon(Icons.fastfood, size: 80, color: Colors.white)
                 : null,
@@ -160,7 +174,11 @@ class _ResultPageState extends State<ResultPage> {
           const SizedBox(height: 20),
           Text(
             _result!.isFood ? _result!.foodName : 'Not Food Identified',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: kTextBrown),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: kTextBrown,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -196,26 +214,33 @@ class _ResultPageState extends State<ResultPage> {
                     backgroundColor: kMangoPrimary,
                     foregroundColor: kMangoBackground,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 3,
                   ),
                   icon: const Icon(Icons.share),
-                  label: const Text('Share', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  label: const Text(
+                    'Share',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
-              _buildIconButton(Icons.download, () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Saving to device..."),
-                    backgroundColor: kMangoPrimary,
-                    duration: Duration(milliseconds: 500),
-                  ),
-                );
-              }),
+              _buildIconButton(Icons.download, _saveFood),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _saveFood() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Saving to device..."),
+        backgroundColor: kMangoPrimary,
+        duration: Duration(milliseconds: 500),
       ),
     );
   }
@@ -246,7 +271,9 @@ class _ResultPageState extends State<ResultPage> {
       context: context,
       backgroundColor: kMangoBackground,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
       builder: (BuildContext context) {
         return Container(
           padding: const EdgeInsets.all(24.0),
@@ -255,12 +282,22 @@ class _ResultPageState extends State<ResultPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                  width: 50,
-                  height: 6,
-                  decoration: BoxDecoration(color: kPlaceholderGrey, borderRadius: BorderRadius.circular(10))),
+                width: 50,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: kPlaceholderGrey,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               const SizedBox(height: 20),
-              const Text('Share Result',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: kTextBrown)),
+              const Text(
+                'Share Result',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: kTextBrown,
+                ),
+              ),
               const SizedBox(height: 20),
               Expanded(
                 child: Container(
@@ -270,7 +307,11 @@ class _ResultPageState extends State<ResultPage> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: kMangoPrimary, width: 2),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
                   child: const Center(
@@ -279,9 +320,14 @@ class _ResultPageState extends State<ResultPage> {
                       children: [
                         Icon(Icons.image, size: 50, color: kPlaceholderGrey),
                         SizedBox(height: 10),
-                        Text('(Generated Report Image)',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: kTextBrown, fontWeight: FontWeight.w500)),
+                        Text(
+                          '(Generated Report Image)',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: kTextBrown,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
