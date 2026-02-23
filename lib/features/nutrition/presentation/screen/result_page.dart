@@ -219,7 +219,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              Wrap(
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: _result!.ingredients.map((ingredient) {
@@ -234,6 +236,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   );
                 }).toList(),
               ),
+              )
             ],
           ],
                 const SizedBox(height: 20),
