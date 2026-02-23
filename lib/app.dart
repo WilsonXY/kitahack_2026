@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kitahack_2026/core/navigation/main_wrapper.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
 import 'package:kitahack_2026/features/auth/presentation/screens/auth_gate.dart';
 import 'package:kitahack_2026/features/nutrition/presentation/screen/result_page.dart';
@@ -26,6 +27,7 @@ class App extends StatelessWidget {
         '/snap': (context) => const SnapPage(),
         '/history': (context) => const HistoryPage(),
         '/result': (context) => const ResultPage(),
+        '/main' : (context) => const MainWrapper()
       },
     );
   }

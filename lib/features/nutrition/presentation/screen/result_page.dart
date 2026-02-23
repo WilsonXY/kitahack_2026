@@ -2,20 +2,23 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:kitahack_2026/core/navigation/main_wrapper.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
+import 'package:kitahack_2026/features/nutrition/presentation/viewmodel/result_viewmodel.dart';
 import 'package:kitahack_2026/widgets/social_icon.dart';
 import 'package:kitahack_2026/features/nutrition/models/nutrition_result.dart';
 import 'package:kitahack_2026/features/nutrition/services/nutrition_service.dart';
 
-class ResultPage extends StatefulWidget {
+class ResultPage extends ConsumerStatefulWidget {
   const ResultPage({super.key});
 
   @override
-  State<ResultPage> createState() => _ResultPageState();
+  ConsumerState<ResultPage> createState() => _ResultPageState();
 }
 
-class _ResultPageState extends State<ResultPage> {
+class _ResultPageState extends ConsumerState<ResultPage> {
   late NutritionService _nutritionService;
   NutritionResult? _result;
   bool _isLoading = true;
@@ -236,6 +239,7 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Future<void> _saveFood() async {
+    ref.read(foodViewModelProvider.notifier).saveFood(_result!);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Saving to device..."),
@@ -243,6 +247,7 @@ class _ResultPageState extends State<ResultPage> {
         duration: Duration(milliseconds: 500),
       ),
     );
+    Navigator.popAndPushNamed(context, '/main',);
   }
 
   Widget _buildIconButton(IconData icon, VoidCallback onTap) {
