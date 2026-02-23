@@ -1,9 +1,30 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
+import 'package:kitahack_2026/features/dashboard/presentation/calorie_tips.dart';
 import 'package:kitahack_2026/widgets/history_summary_item.dart';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({super.key});
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  String _currentTip = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTip();
+  }
+
+  void _refreshTip() {
+    setState(() {
+      _currentTip = calorieTips[Random().nextInt(calorieTips.length)];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,25 +102,28 @@ class MainPage extends StatelessWidget {
               // TODO: not sure if we want to implement this
               const Text('Daily Calorie Tips', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 15),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: kMangoAccent),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.lightbulb, color: kMangoPrimary, size: 30),
-                    const SizedBox(width: 15),
-                    const Expanded(
-                      child: Text(
-                        "Did you know? Mangos are rich in Vitamin C! Snap your snack to track your intake.",
-                        style: TextStyle(color: kTextBrown, fontSize: 16),
+              GestureDetector(
+                onTap: _refreshTip,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: kMangoAccent),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lightbulb, color: kMangoPrimary, size: 30),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: Text(
+                          _currentTip,
+                          style: const TextStyle(color: kTextBrown, fontSize: 16),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 30),

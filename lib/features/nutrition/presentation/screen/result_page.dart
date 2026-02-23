@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -78,7 +77,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         title: const Text('Analysis Result'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: kTextBrown,
+        // foregroundColor: kTextBrown,
       ),
       body: _isLoading
           ? _buildLoadingState()
@@ -98,7 +97,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           Text(
             'Analyzing your food...',
             style: TextStyle(
-              color: kTextBrown,
+              // color: kTextBrown,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -141,16 +140,15 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   Widget _buildResultState() {
     if (_result == null) return const SizedBox.shrink();
 
-    final jsonString = const JsonEncoder.withIndent(
-      '  ',
-    ).convert(_result!.toJson());
-
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
             width: 200,
             height: 200,
             decoration: BoxDecoration(
@@ -174,67 +172,290 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 ? const Icon(Icons.fastfood, size: 80, color: Colors.white)
                 : null,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Text(
             _result!.isFood ? _result!.foodName : 'Not Food Identified',
+            textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: kTextBrown,
+              //color: kTextBrown,
             ),
           ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: Container(
-              width: double.infinity,
+          if (_result!.isFood) ...[
+            const SizedBox(height: 12),
+            Text(
+              _result!.description,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.5,
+                // color: kTextBrown.withValues(alpha: 0.8),
+              ),
+            ),
+            const SizedBox(height: 32),
+            _buildNutritionGrid(),
+            const SizedBox(height: 24),
+            Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: kMangoAccent.withValues(alpha: 0.5)),
+                border: Border.all(color: kMangoAccent.withValues(alpha: 0.3)),
               ),
-              child: SingleChildScrollView(
+              child: _buildInfoRow(
+                  Icons.scale, 'Portion Size', _result!.portionSize),
+            ),
+            const SizedBox(height: 24),
+            if (_result!.ingredients.isNotEmpty) ...[
+              const Align(
+                alignment: Alignment.centerLeft,
                 child: Text(
-                  jsonString,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 14,
-                    color: kTextBrown,
+                  'Ingredients',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    //color: kTextBrown,
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _result!.ingredients.map((ingredient) {
+                  return Chip(
+                    label: Text(ingredient),
+                    backgroundColor: kMangoPrimary.withValues(alpha: 0.1),
+                    labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w500),
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  );
+                }).toList(),
+              ),
+            ],
+          ],
+                const SizedBox(height: 20),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    _showSharePopOut(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kMangoPrimary,
-                    foregroundColor: kMangoBackground,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 3,
-                  ),
-                  icon: const Icon(Icons.share),
-                  label: const Text(
-                    'Share',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
               ),
-              const SizedBox(width: 16),
-              _buildIconButton(Icons.download, _saveFood),
+            ],
+          ),
+          child: SafeArea(
+            child: _result!.isFood
+                ? Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            _showSharePopOut(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: kMangoPrimary,
+                            foregroundColor: kMangoBackground,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          icon: const Icon(Icons.share),
+                          label: const Text(
+                            'Share',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      _buildIconButton(Icons.download, _saveFood),
+                    ],
+                  )
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/main');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kMangoPrimary,
+                        foregroundColor: kMangoBackground,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                      icon: const Icon(Icons.home),
+                      label: const Text(
+                        'Back to Home',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNutritionGrid() {
+    final nutrition = _result!.nutrition;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildMacroRow('Calories', '${nutrition.calories.round()} kcal',
+              Icons.local_fire_department, Colors.orange),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildMacroItem('Protein', '${nutrition.protein}g', Colors.blue),
+              _buildMacroItem('Carbs', '${nutrition.carbs}g', Colors.green),
+              _buildMacroItem('Fat', '${nutrition.fat}g', Colors.red),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMacroRow(
+      String label, String value, IconData icon, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: kTextBrown,
+              ),
+            ),
+          ],
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: kTextBrown,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMacroItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: kTextBrown,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: kTextBrown.withValues(alpha: 0.6),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: kMangoPrimary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: kMangoPrimary, size: 24),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: kTextBrown.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: kTextBrown,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -300,7 +521,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: kTextBrown,
+                  // color: kTextBrown,
                 ),
               ),
               const SizedBox(height: 20),
@@ -329,7 +550,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           '(Generated Report Image)',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: kTextBrown,
+                            // color: kTextBrown,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

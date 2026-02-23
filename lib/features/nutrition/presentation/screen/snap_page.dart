@@ -161,19 +161,19 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
                 child: Ink(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: kMangoPrimary, width: 2),
+                    border: Border.all(width: 2), //color: kMangoPrimary, 
                     color: Colors.transparent,
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(100),
                     onTap: _takePicture,
-                    splashColor: kMangoPrimary,
+                    //splashColor: kMangoPrimary,
                     child: Container(
                       width: 90,
                       height: 90,
                       padding: const EdgeInsets.all(4),
                       child: const CircleAvatar(
-                        backgroundColor: kMangoPrimary,
+                        //backgroundColor: kMangoPrimary,
                         child: Icon(
                           Icons.camera_alt,
                           color: Colors.white,
@@ -193,11 +193,11 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
 
   Widget _buildSelectionScreen() {
     return Scaffold(
-      backgroundColor: kMangoBackground,
+      //backgroundColor: kMangoBackground,
       appBar: AppBar(
         title: const Text(
           'Capture Image',
-          style: TextStyle(color: kTextBrown, fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold), //color: kTextBrown, 
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -215,7 +215,7 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
             const Icon(
               Icons.photo_camera_rounded,
               size: 100,
-              color: kMangoPrimary,
+              //color: kMangoPrimary,
             ),
             const SizedBox(height: 40),
             const Text(
@@ -224,7 +224,7 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: kTextBrown,
+                //color: kMangoPrimary,
               ),
             ),
             const SizedBox(height: 40),
@@ -250,8 +250,8 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
                 style: TextStyle(fontSize: 18),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: kMangoPrimary,
-                side: const BorderSide(color: kMangoPrimary, width: 2),
+                //foregroundColor: kMangoPrimary,
+                side: const BorderSide(color: kMangoAccent, width: 2), //color: kMangoPrimary, 
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -275,8 +275,8 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
             height: 40,
             decoration: const BoxDecoration(
               border: Border(
-                top: BorderSide(color: kMangoAccent, width: 3),
-                left: BorderSide(color: kMangoAccent, width: 3),
+                top: BorderSide(width: 3), //color: kMangoAccent, 
+                left: BorderSide(width: 3), //color: kMangoAccent, 
               ),
             ),
           ),
@@ -289,8 +289,8 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
             height: 40,
             decoration: const BoxDecoration(
               border: Border(
-                top: BorderSide(color: kMangoAccent, width: 3),
-                right: BorderSide(color: kMangoAccent, width: 3),
+                top: BorderSide(width: 3), //color: kMangoAccent, 
+                right: BorderSide(width: 3), //color: kMangoAccent, 
               ),
             ),
           ),
@@ -303,8 +303,8 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
             height: 40,
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: kMangoAccent, width: 3),
-                left: BorderSide(color: kMangoAccent, width: 3),
+                bottom: BorderSide(width: 3), //color: kMangoAccent, 
+                left: BorderSide(width: 3), //color: kMangoAccent, 
               ),
             ),
           ),
@@ -317,8 +317,8 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
             height: 40,
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: kMangoAccent, width: 3),
-                right: BorderSide(color: kMangoAccent, width: 3),
+                bottom: BorderSide(width: 3), //color: kMangoAccent, 
+                right: BorderSide(width: 3), //color: kMangoAccent, 
               ),
             ),
           ),

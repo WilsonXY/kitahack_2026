@@ -1,0 +1,17 @@
+const List<String> calorieTips = [
+  "Did you know? Mangos are rich in Vitamin C! Snap your snack to track your intake.",
+  "Drinking water before meals can help you feel fuller and eat less.",
+  "Protein requires more energy to digest than fats or carbs, boosting your metabolism.",
+  "Eating slowly gives your brain time to receive the 'full' signal from your stomach.",
+  "Fiber-rich foods like fruits and vegetables help control blood sugar levels.",
+  "Lack of sleep can increase hunger hormones, leading to overeating.",
+  "Green tea contains antioxidants that may help boost metabolism.",
+  "Spicy foods containing capsaicin can temporarily boost your metabolism.",
+  "Whole grains provide more sustained energy than refined grains.",
+  "Tracking your food intake can double your weight loss success.",
+  "Don't skip breakfast; it kickstarts your metabolism for the day.",
+  "Muscle tissue burns more calories at rest than fat tissue.",
+  "Sugary drinks are a major source of empty calories.",
+  "Healthy fats like those in avocados and nuts are essential for brain function.",
+  "Planning your meals ahead of time prevents impulsive unhealthy choices.",
+];
