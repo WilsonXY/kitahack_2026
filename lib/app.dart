@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
-import 'package:kitahack_2026/features/auth/presentation/auth_gate.dart';
+import 'package:kitahack_2026/features/auth/presentation/screens/auth_gate.dart';
 import 'package:kitahack_2026/features/nutrition/presentation/snap_page.dart';
 import 'package:kitahack_2026/features/nutrition/presentation/result_page.dart';
 import 'package:kitahack_2026/pages/history_page.dart';
