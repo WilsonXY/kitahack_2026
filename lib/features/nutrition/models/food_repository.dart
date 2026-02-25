@@ -16,12 +16,15 @@ class FoodRepository {
     }
   }
 
-  // TODO : Wait for Nicholas
-  // Future<String> uploadFoodImage(String uid,Uint8List imageBytes) async {
-  //   try{
-  //     await foodServices.saveFoodImages(uid, imageBytes);
-  //   } catch (e) {
-  //     throw Exception('Failed to Save Food Image: $e');
-  //   }
-  // }
+  Future<List<FoodModel>> getAllFood(String uid) async {
+    try {
+      final snapshot = await foodServices.getUserFood(uid);
+
+      return snapshot.docs.map((doc){
+        return FoodModel.fromMap(doc.data() as Map<String,dynamic>,doc.id);
+      }).toList();
+    } catch (e){
+      throw Exception('Failed to Get Foods');
+    }
+  }
 }

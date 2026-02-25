@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kitahack_2026/features/auth/data/auth_providers.dart';
 import 'package:kitahack_2026/features/nutrition/data/food_provider.dart';
