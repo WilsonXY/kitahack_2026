@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
 import 'package:kitahack_2026/features/nutrition/presentation/viewmodel/result_viewmodel.dart';
-import 'package:kitahack_2026/widgets/social_icon.dart';
+import 'package:kitahack_2026/features/nutrition/presentation/widgets/social_icon.dart';
 import 'package:kitahack_2026/features/nutrition/models/nutrition_result.dart';
 import 'package:kitahack_2026/features/nutrition/services/nutrition_service.dart';
 

@@ -1,3 +1,5 @@
+// Unused -> Change to Bottom Navigation Bar Design
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';

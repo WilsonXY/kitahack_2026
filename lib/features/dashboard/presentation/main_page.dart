@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
 import 'package:kitahack_2026/features/dashboard/presentation/calorie_tips.dart';
-import 'package:kitahack_2026/widgets/history_summary_item.dart';
+import 'package:kitahack_2026/features/history/presentation/widgets/history_summary_item.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
