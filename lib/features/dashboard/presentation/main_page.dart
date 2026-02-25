@@ -1,17 +1,20 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kitahack_2026/core/theme/mango_theme.dart';
 import 'package:kitahack_2026/features/dashboard/presentation/calorie_tips.dart';
 import 'package:kitahack_2026/features/history/presentation/widgets/history_summary_item.dart';
+import 'package:kitahack_2026/features/nutrition/data/food_provider.dart';
 
-class MainPage extends StatefulWidget {
+class MainPage extends ConsumerStatefulWidget {
   const MainPage({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  ConsumerState<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
+class _MainPageState extends ConsumerState<MainPage>
+    with SingleTickerProviderStateMixin {
   String _currentTip = "";
   late AnimationController _buttonController;
   late Animation<double> _buttonScale;
@@ -45,9 +48,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       drawerEdgeDragWidth: MediaQuery.of(context).size.width * 0.3,
-      appBar: AppBar(
-        title: const Text('SnapMango!'),
-      ),
+      appBar: AppBar(title: const Text('SnapMango!')),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -63,9 +64,13 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                     child: Material(
                       color: kMangoPrimary,
                       elevation: 7,
-                      shape: const CircleBorder(side: BorderSide(color: kMangoAccent, width: 4)),
+                      shape: const CircleBorder(
+                        side: BorderSide(color: kMangoAccent, width: 4),
+                      ),
                       child: InkWell(
-                        customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                        customBorder: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
                         onTap: () {
                           _buttonController.forward().then((_) {
                             _buttonController.reverse().then((_) {
@@ -105,20 +110,43 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                   ),
                   TextButton(
                     onPressed: () => Navigator.pushNamed(context, '/history'),
-                    child: const Text('See All', style: TextStyle(color: kMangoPrimary)),
+                    child: const Text(
+                      'See All',
+                      style: TextStyle(color: kMangoPrimary),
+                    ),
                   ),
                 ],
               ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return const HistorySummaryItem();
-                },
-              ),
+              ref
+                  .watch(foodHistoryProvider)
+                  .when(
+                    data: (foods) {
+                      if (foods.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Text("No food logged yet!"),
+                        );
+                      }
+                      final recentFoods = foods.take(3).toList();
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: recentFoods.length,
+                        itemBuilder: (context, index) {
+                          return HistorySummaryItem(foodModel: recentFoods[index]);
+                        },
+                      );
+                    },
+                    error: (error, stack) =>
+                        Center(child: Text("Error loading foods ($error)")),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                  ),
               const SizedBox(height: 30),
-              const Text('Daily Calorie Tips', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const Text(
+                'Daily Calorie Tips',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 15),
               GestureDetector(
                 onTap: _refreshTip,
@@ -132,35 +160,46 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.lightbulb, color: kMangoPrimary, size: 30),
+                      const Icon(
+                        Icons.lightbulb,
+                        color: kMangoPrimary,
+                        size: 30,
+                      ),
                       const SizedBox(width: 15),
                       Expanded(
                         child: ClipRect(
                           child: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 300),
-                            transitionBuilder: (Widget child, Animation<double> animation) {
-                              final inAnimation = Tween<Offset>(
-                                      begin: const Offset(1.0, 0.0), end: Offset.zero)
-                                  .animate(animation);
-                              final outAnimation = Tween<Offset>(
-                                      begin: const Offset(-1.0, 0.0), end: Offset.zero)
-                                  .animate(animation);
-                              if (child.key == ValueKey<String>(_currentTip)) {
-                                return SlideTransition(
-                                  position: inAnimation,
-                                  child: child,
-                                );
-                              } else {
-                                return SlideTransition(
-                                  position: outAnimation,
-                                  child: child,
-                                );
-                              }
-                            },
+                            transitionBuilder:
+                                (Widget child, Animation<double> animation) {
+                                  final inAnimation = Tween<Offset>(
+                                    begin: const Offset(1.0, 0.0),
+                                    end: Offset.zero,
+                                  ).animate(animation);
+                                  final outAnimation = Tween<Offset>(
+                                    begin: const Offset(-1.0, 0.0),
+                                    end: Offset.zero,
+                                  ).animate(animation);
+                                  if (child.key ==
+                                      ValueKey<String>(_currentTip)) {
+                                    return SlideTransition(
+                                      position: inAnimation,
+                                      child: child,
+                                    );
+                                  } else {
+                                    return SlideTransition(
+                                      position: outAnimation,
+                                      child: child,
+                                    );
+                                  }
+                                },
                             child: Text(
                               _currentTip,
                               key: ValueKey<String>(_currentTip),
-                              style: const TextStyle(color: kTextBrown, fontSize: 16),
+                              style: const TextStyle(
+                                color: kTextBrown,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                         ),
@@ -171,7 +210,10 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
               ),
               const SizedBox(height: 30),
               // TODO: not sure if we want to implement this
-              const Text('Your Weekly Summary', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const Text(
+                'Your Weekly Summary',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 15),
               Container(
                 height: 150,
