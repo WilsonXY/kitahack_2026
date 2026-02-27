@@ -9,6 +9,17 @@ import 'package:kitahack_2026/features/nutrition/presentation/widgets/social_ico
 import 'package:kitahack_2026/features/nutrition/models/nutrition_result.dart';
 import 'package:kitahack_2026/features/nutrition/services/nutrition_service.dart';
 
+//import 'dart:ui' as ui;
+//import 'package:flutter/rendering.dart';
+import 'package:gal/gal.dart';
+import 'package:flutter/foundation.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:intl/intl.dart';
+//import 'package:kitahack_2026/features/nutrition/services/sharing_services.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 class ResultPage extends ConsumerStatefulWidget {
   const ResultPage({super.key});
 
@@ -23,6 +34,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   String? _error;
   String? _imagePath;
   Uint8List? _imageBytes;
+
+  final ScreenshotController _screenshotController = ScreenshotController(); 
+  bool _isSavingImage = false;
+  DateTime? _analysisCreatedAt;
+  Uint8List? _exportImageBytes;
 
   @override
   void initState() {
@@ -138,6 +154,14 @@ class _ResultPageState extends ConsumerState<ResultPage> {
 
   Widget _buildResultState() {
     if (_result == null) return const SizedBox.shrink();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (mounted && _imageBytes != null) {
+        _captureExportImage();
+      }
+    });
+
 
     return Column(
       children: [
@@ -263,7 +287,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            _showSharePopOut(context);
+                            _showSharePopOut(context, _exportImageBytes);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kMangoPrimary,
@@ -389,29 +413,30 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  Widget _buildMacroItem(String label, String value, Color color) {
+  Widget _buildMacroItem(String label, String value, Color color, {bool isExport = false}) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: isExport ? 16 : 18,
             fontWeight: FontWeight.bold,
             color: kTextBrown,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: isExport ? 12 : 14,
             color: kTextBrown.withValues(alpha: 0.6),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Container(
-          width: 40,
-          height: 4,
+          width: isExport ? 24 : 40,
+          height: 3,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(2),
@@ -462,15 +487,52 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   Future<void> _saveFood() async {
-    ref.read(foodViewModelProvider.notifier).saveFood(_result!);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Saving to device..."),
-        backgroundColor: kMangoPrimary,
-        duration: Duration(milliseconds: 500),
-      ),
-    );
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (_isSavingImage || _result == null) return;
+    
+    setState(() => _isSavingImage = true);
+
+      try{
+        if(_exportImageBytes == null){
+          await _captureExportImage();
+        }
+    
+      final cleanFoodName = _result!.foodName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+      final fileName = "${cleanFoodName}_nutrition_report";
+
+      if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+        final hasAccess = await Gal.hasAccess();
+        if (!hasAccess) await Gal.requestAccess();
+        await Gal.putImageBytes(_exportImageBytes!, name: fileName);
+
+      } else {
+        await FileSaver.instance.saveFile(
+          name: fileName,
+          bytes: _exportImageBytes,
+          fileExtension: 'png',
+          mimeType: MimeType.png,
+        );
+      }
+
+      _analysisCreatedAt = DateTime.now();
+      await ref.read(foodViewModelProvider.notifier).saveFood(_result!, _analysisCreatedAt);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Image Saved to Device."), backgroundColor: kMangoPrimary),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to save: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingImage = false);
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    }
   }
 
   Widget _buildIconButton(IconData icon, VoidCallback onTap) {
@@ -494,7 +556,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  void _showSharePopOut(BuildContext context) {
+  void _showSharePopOut(BuildContext context, Uint8List? exportImageBytes) {
     showModalBottomSheet(
       context: context,
       backgroundColor: kMangoBackground,
@@ -505,7 +567,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
       builder: (BuildContext context) {
         return Container(
           padding: const EdgeInsets.all(24.0),
-          height: 500,
+          height: MediaQuery.of(context).size.height * 0.72,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -529,6 +591,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               const SizedBox(height: 20),
               Expanded(
                 child: Container(
+                  alignment: Alignment.center,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -542,33 +605,55 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.image, size: 50, color: kPlaceholderGrey),
-                        SizedBox(height: 10),
-                        Text(
-                          '(Generated Report Image)',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            // color: kTextBrown,
-                            fontWeight: FontWeight.w500,
+                  child: exportImageBytes != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.memory(
+                            exportImageBytes,
+                            fit: BoxFit.cover,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+                        )
+                      : const SizedBox.expand(),
+
+                  // child: const Center(
+                  //   child: Column(
+                  //     mainAxisAlignment: MainAxisAlignment.center,
+                  //     children: [
+                  //       Icon(Icons.image, size: 50, color: kPlaceholderGrey),
+                  //       SizedBox(height: 10),
+                  //       Text(
+                  //         '(Generated Report Image)',
+                  //         textAlign: TextAlign.center,
+                  //         style: TextStyle(
+                  //           // color: kTextBrown,
+                  //           fontWeight: FontWeight.w500,
+                  //         ),
+                  //       ),
+                  //    ],
+                  //  ),
+                  //),
                 ),
               ),
               const SizedBox(height: 30),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SocialIcon(Icons.facebook, Colors.blue),
-                  SocialIcon(Icons.alternate_email, Colors.black),
+                  SocialIcon(
+                    Icons.facebook, 
+                    Colors.blue, 
+                    onTap: _shareToFacebook,
+                    ),
+                  SocialIcon(
+                    Icons.alternate_email, 
+                    Colors.black,
+                    onTap: _shareToGmail,
+                    ),
                   SocialIcon(Icons.message, Colors.green),
-                  SocialIcon(Icons.more_horiz, kMangoPrimary),
+                  SocialIcon(
+                    Icons.more_horiz, 
+                    kMangoPrimary,
+                    onTap: _shareToSelection
+                    ,),
                 ],
               ),
               const SizedBox(height: 20),
@@ -576,6 +661,221 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _shareToFacebook() async {
+  // Just redirects to FB
+  try {
+    final facebookUrl = Uri.parse('https://www.facebook.com/');
+    await launchUrl(facebookUrl, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to open Facebook: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+}
+
+  Future<void> _shareToGmail() async {
+  if (_exportImageBytes == null) return;
+
+  try {
+    final subject = '${_result!.foodName} - Nutrition Analysis';
+    final body = 'Check out my food analysis from SnapMango 2026!\n\nFood: ${_result!.foodName}\nPortion: ${_result!.portionSize}';
+
+    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+      // Mobile
+      final sharingContent = ShareParams(
+        text: body,
+        subject: subject,
+        files: [XFile.fromData(
+          _exportImageBytes!,
+          mimeType: 'image/png',
+          name: 'nutrition_report.png',
+        )],
+      );
+      
+      await SharePlus.instance.share(sharingContent);
+    } else {
+      // Web/PC
+      final encodedSubject = Uri.encodeComponent(subject);
+      final encodedBody = Uri.encodeComponent(body);
+      
+      final gmailUrl = Uri.parse('https://mail.google.com/mail/?view=cm&fs=1&to=&su=$encodedSubject&body=$encodedBody');
+      await launchUrl(gmailUrl, mode: LaunchMode.externalApplication);
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to open Gmail: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+}
+
+
+  // NOTE: Doesn't work on pc yet
+  Future<void> _shareToSelection() async {
+  try {
+    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+      // Mobile
+      final sharingContent = ShareParams(
+        text: '${_result!.foodName} - Nutrition Analysis\n\nGenerated by SnapMango 2026',
+        files: [XFile.fromData(
+          _exportImageBytes!,
+          mimeType: 'image/png',
+          name: 'nutrition_report.png',
+        )],
+      );
+      
+      
+    } else {
+      // Web/PC
+      final sharingContent = ShareParams(
+        text: '${_result!.foodName} - Nutrition Analysis\n\nGenerated by SnapMango 2026',
+        files: [XFile.fromData(
+          _exportImageBytes!,
+          mimeType: 'image/png',
+          name: 'nutrition_report.png',
+        )],
+      );await SharePlus.instance.share(sharingContent);
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to share: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+}
+
+
+  Widget _buildExportImage() {
+    final String formattedDate = DateFormat('MMM d, yyyy • h:mm a').format(_analysisCreatedAt ?? DateTime.now());
+
+    return Material(
+      color: kMangoBackground,
+      child: Container(
+        width: 540,
+        height: 600,
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // const Text(
+            //   "My Food Analysis",
+            //   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: kMangoPrimary),
+            // ),
+            // const SizedBox(height: 16),
+
+            // Polaroid Container
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(2, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Polaroid Image Section
+                  Container(
+                    width: 280,
+                    height: 280,
+                    margin: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: kMangoPrimary,
+                        width: 8,
+                      ),
+                      image: _imageBytes != null 
+                          ? DecorationImage(image: MemoryImage(_imageBytes!), fit: BoxFit.cover)
+                          : null,
+                    ),
+                  ),
+
+                  // Polaroid Bottom Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Food Name
+                        Text(
+                          _result!.foodName,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: kTextBrown,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Portion Size
+                        Text(
+                          "Portion: ${_result!.portionSize}",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Nutrition Info
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: _buildMacroItem('Calories', '${_result!.nutrition.calories.round()}', Colors.orange, isExport: true)),
+                            Expanded(child: _buildMacroItem('Protein', '${_result!.nutrition.protein}g', Colors.blue, isExport: true)),
+                            Expanded(child: _buildMacroItem('Carbs', '${_result!.nutrition.carbs}g', Colors.green, isExport: true)),
+                            Expanded(child: _buildMacroItem('Fat', '${_result!.nutrition.fat}g', Colors.red, isExport: true)),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Date + time created
+                        Text(
+                          formattedDate,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: kMangoPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            const Text("Generated by SnapMango 2026", style: TextStyle(fontSize: 9, color: Colors.grey)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper for _saveFood and in showSharePopUp
+  Future<void> _captureExportImage() async {
+    _exportImageBytes = await _screenshotController.captureFromWidget(
+      _buildExportImage(),
+      delay: const Duration(milliseconds: 100),
+      pixelRatio: 2.0,
+      context: context,
     );
   }
 }

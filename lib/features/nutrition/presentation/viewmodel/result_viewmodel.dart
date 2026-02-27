@@ -12,7 +12,7 @@ class FoodViewModel extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() {}
 
-  Future<void> saveFood(NutritionResult nutritionResult) async { // TODO : Add Uint8List imageBytes, 
+  Future<void> saveFood(NutritionResult nutritionResult, DateTime? createdAt) async { // TODO : Add Uint8List imageBytes, 
     state = const AsyncLoading();
 
     state = await AsyncValue.guard(() async {
@@ -28,7 +28,7 @@ class FoodViewModel extends AsyncNotifier<void> {
       final newFood = FoodModel(
         userId: currentUser.uid,
         imageUrl: "",
-        createdAt: DateTime.now(),
+        createdAt: createdAt ?? DateTime.now(),
         nutritionResult: nutritionResult,
       );
 
