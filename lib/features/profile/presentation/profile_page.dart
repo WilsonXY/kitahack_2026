@@ -5,6 +5,8 @@ import 'package:kitahack_2026/core/theme/sizes.dart';
 import 'package:kitahack_2026/features/auth/data/auth_providers.dart';
 import 'package:kitahack_2026/features/auth/presentation/viewmodel/auth_viewmodel.dart';
 import 'package:kitahack_2026/features/nutrition/data/food_provider.dart';
+import 'package:kitahack_2026/features/profile/presentation/edit_profile_page.dart';
+import 'package:kitahack_2026/features/support/presentation/help_support_page.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -39,10 +41,20 @@ class ProfilePage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            _buildMenuTile(Icons.edit_outlined, "Edit Profile", () {}),
-            _buildMenuTile(Icons.notifications_none_rounded, "Notifications", () {}),
-            _buildMenuTile(Icons.security_outlined, "Privacy & Security", () {}),
-            _buildMenuTile(Icons.help_outline_rounded, "Help & Support", () {}),
+            _buildMenuTile(Icons.edit_outlined, "Edit Profile", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EditProfilePage()),
+              );
+            }),
+            _buildMenuTile(Icons.help_outline_rounded, "Help & Support", () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HelpSupportPage()),
+              );
+            }),
             const Divider(height: 32),
             _buildMenuTile(
               Icons.logout_rounded,
