@@ -75,6 +75,12 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         _result = result;
         _isLoading = false;
       });
+
+      // Safe Food Automatically before navigating to the Results Page
+      if (result.isFood) {
+         ref.read(foodViewModelProvider.notifier).saveFood(result,DateTime.now());
+      }
+
     } catch (e) {
       setState(() {
         _error = 'Failed to analyze image: $e';
@@ -508,12 +514,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           mimeType: MimeType.png,
         );
       }
-
-      _analysisCreatedAt = DateTime.now();
-      if (!_hasDownloaded){
-        await ref.read(foodViewModelProvider.notifier).saveFood(_result!, _analysisCreatedAt);
-      }
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Image Saved to Device."), backgroundColor: kMangoPrimary),

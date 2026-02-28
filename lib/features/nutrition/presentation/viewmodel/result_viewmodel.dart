@@ -33,6 +33,8 @@ class FoodViewModel extends AsyncNotifier<void> {
       );
 
       await repository.saveFood(newFood);
+
+      ref.invalidate(foodHistoryProvider);
     });
   }
 }

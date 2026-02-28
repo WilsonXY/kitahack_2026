@@ -93,7 +93,7 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
       final XFile image = await _controller!.takePicture();
       if (!mounted) return;
 
-      Navigator.pushReplacementNamed(context, '/result', arguments: image.path);
+      Navigator.pushNamed(context, '/result', arguments: image.path);
     } catch (e) {
       debugPrint("Error taking picture: $e");
     }
@@ -105,7 +105,7 @@ class _SnapPageState extends State<SnapPage> with WidgetsBindingObserver {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null && mounted) {
-        Navigator.pushReplacementNamed(
+        Navigator.pushNamed(
           context,
           '/result',
           arguments: image.path,
