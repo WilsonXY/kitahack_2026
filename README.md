@@ -4,7 +4,7 @@
 
 ## 🌟 Overview
 
-Tracking nutrition is often a tedious and manual task. SnapMango simplifies this by allowing users to simply "Snap" a photo of their meal. Using a **Multi-Agent System powered by Google Gemini**, the app automatically identifies food items, estimates portion sizes, calculates nutritional data, and tracks progress over time.
+Tracking nutrition is often a tedious and manual task. SnapMango simplifies this by allowing users to simply "Snap" a photo of their meal. Using a **Multi-Agent System powered by Google Gemini**, the app automatically identifies food items, estimates portion sizes, calculates nutritional data and tracks progress over time.
 
 ## 🚀 Key Features
 
