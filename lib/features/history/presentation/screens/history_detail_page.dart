@@ -25,6 +25,32 @@ class HistoryDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Food Image Placeholder or actual image
+            if (foodModel.imageUrl.isNotEmpty)
+               Container(
+                width: 200,
+                height: 200,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: NetworkImage(foodModel.imageUrl),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: 200,
+                height: 200,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: kPlaceholderGrey,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.fastfood, size: 80, color: Colors.white),
+              ),
+
             // Title and Date
             Text(
               result.foodName,
@@ -37,6 +63,7 @@ class HistoryDetailPage extends StatelessWidget {
               style: TextStyle(fontSize: 14, color: kTextBrown.withValues(alpha: 0.6)),
             ),
             const SizedBox(height: 20),
+            
             // Description
             if (result.description.isNotEmpty) ...[
               Text(
@@ -47,7 +74,7 @@ class HistoryDetailPage extends StatelessWidget {
               const SizedBox(height: 32),
             ],
 
-            // Nutrition Grid from ResultPage
+            // Nutrition Grid
             _buildNutritionGrid(result.nutrition),
             const SizedBox(height: 24),
 
@@ -90,14 +117,13 @@ class HistoryDetailPage extends StatelessWidget {
                 ),
               )
             ],
-            const SizedBox(height: 40), // Bottom padding
+            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  // REUSED WIDGETS FROM RESULT PAGE
   Widget _buildNutritionGrid(dynamic nutrition) {
     return Container(
       padding: const EdgeInsets.all(20),
