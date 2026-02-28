@@ -35,7 +35,7 @@ class App extends StatelessWidget {
           },
         ),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       home: const AuthGate(),
       routes: {
         '/snap': (context) => const SnapPage(),
