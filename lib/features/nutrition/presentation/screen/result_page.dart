@@ -9,14 +9,11 @@ import 'package:kitahack_2026/features/nutrition/presentation/widgets/social_ico
 import 'package:kitahack_2026/features/nutrition/models/nutrition_result.dart';
 import 'package:kitahack_2026/features/nutrition/services/nutrition_service.dart';
 
-//import 'dart:ui' as ui;
-//import 'package:flutter/rendering.dart';
 import 'package:gal/gal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:intl/intl.dart';
-//import 'package:kitahack_2026/features/nutrition/services/sharing_services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -39,6 +36,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   bool _isSavingImage = false;
   DateTime? _analysisCreatedAt;
   Uint8List? _exportImageBytes;
+  bool _hasDownloaded = false;
 
   @override
   void initState() {
@@ -286,9 +284,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            _showSharePopOut(context, _exportImageBytes);
-                          },
+                          onPressed: () => _handleSaveShare(context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: kMangoPrimary,
                             foregroundColor: kMangoBackground,
@@ -299,15 +295,15 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                             elevation: 2,
                           ),
                           icon: const Icon(Icons.share),
-                          label: const Text(
-                            'Share',
+                          label: Text(
+                            _hasDownloaded ? 'Share' : 'Donwload and Share',
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                       const SizedBox(width: 16),
-                      _buildIconButton(Icons.download, _saveFood),
+                      _buildIconButton(Icons.download, _handleSave),
                     ],
                   )
                 : SizedBox(
@@ -514,7 +510,9 @@ class _ResultPageState extends ConsumerState<ResultPage> {
       }
 
       _analysisCreatedAt = DateTime.now();
-      await ref.read(foodViewModelProvider.notifier).saveFood(_result!, _analysisCreatedAt);
+      if (!_hasDownloaded){
+        await ref.read(foodViewModelProvider.notifier).saveFood(_result!, _analysisCreatedAt);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -530,9 +528,11 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     } finally {
       if (mounted) {
         setState(() => _isSavingImage = false);
-        Navigator.popUntil(context, (route) => route.isFirst);
+        //Navigator.popUntil(context, (route) => route.isFirst);
       }
     }
+
+    _hasDownloaded = true;
   }
 
   Widget _buildIconButton(IconData icon, VoidCallback onTap) {
@@ -614,24 +614,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           ),
                         )
                       : const SizedBox.expand(),
-
-                  // child: const Center(
-                  //   child: Column(
-                  //     mainAxisAlignment: MainAxisAlignment.center,
-                  //     children: [
-                  //       Icon(Icons.image, size: 50, color: kPlaceholderGrey),
-                  //       SizedBox(height: 10),
-                  //       Text(
-                  //         '(Generated Report Image)',
-                  //         textAlign: TextAlign.center,
-                  //         style: TextStyle(
-                  //           // color: kTextBrown,
-                  //           fontWeight: FontWeight.w500,
-                  //         ),
-                  //       ),
-                  //    ],
-                  //  ),
-                  //),
                 ),
               ),
               const SizedBox(height: 30),
@@ -648,7 +630,10 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     Colors.black,
                     onTap: _shareToGmail,
                     ),
-                  SocialIcon(Icons.message, Colors.green),
+                  SocialIcon(
+                    Icons.message, 
+                    Colors.green, 
+                    onTap: _shareToWhatsApp,),
                   SocialIcon(
                     Icons.more_horiz, 
                     kMangoPrimary,
@@ -665,92 +650,94 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   }
 
   Future<void> _shareToFacebook() async {
-  // Just redirects to FB
-  try {
-    final facebookUrl = Uri.parse('https://www.facebook.com/');
-    await launchUrl(facebookUrl, mode: LaunchMode.externalApplication);
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to open Facebook: $e'), backgroundColor: Colors.red),
-      );
+    try {
+      final facebookUrl = Uri.parse('https://www.facebook.com/');
+      await launchUrl(facebookUrl, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to open Facebook: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
-}
 
   Future<void> _shareToGmail() async {
-  if (_exportImageBytes == null) return;
+    try {
+      final subject = '${_result!.foodName} - Nutrition Analysis';
+      final body = 'Check out my food analysis from SnapMango 2026!';
+  
+      if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+        final encodedSubject = subject.replaceAll(' ', '%20');
+        final encodedBody = body.replaceAll(' ', '%20');
+        
+        final Uri emailUri = Uri.parse('mailto:?subject=$encodedSubject&body=$encodedBody');
+        await launchUrl(emailUri);
 
-  try {
-    final subject = '${_result!.foodName} - Nutrition Analysis';
-    final body = 'Check out my food analysis from SnapMango 2026!\n\nFood: ${_result!.foodName}\nPortion: ${_result!.portionSize}';
-
-    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
-      // Mobile
-      final sharingContent = ShareParams(
-        text: body,
-        subject: subject,
-        files: [XFile.fromData(
-          _exportImageBytes!,
-          mimeType: 'image/png',
-          name: 'nutrition_report.png',
-        )],
-      );
-      
-      await SharePlus.instance.share(sharingContent);
-    } else {
-      // Web/PC
-      final encodedSubject = Uri.encodeComponent(subject);
-      final encodedBody = Uri.encodeComponent(body);
-      
-      final gmailUrl = Uri.parse('https://mail.google.com/mail/?view=cm&fs=1&to=&su=$encodedSubject&body=$encodedBody');
-      await launchUrl(gmailUrl, mode: LaunchMode.externalApplication);
-    }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to open Gmail: $e'), backgroundColor: Colors.red),
-      );
+      } else {
+        final encodedSubject = Uri.encodeComponent(subject);
+        final encodedBody = Uri.encodeComponent(body);
+        
+        final gmailUrl = Uri.parse('https://mail.google.com/mail/?view=cm&fs=1&to=&su=$encodedSubject&body=$encodedBody');
+        await launchUrl(gmailUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to open Gmail: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
-}
+  
+  Future<void> _shareToWhatsApp() async {
+    try {
+      final message = '${_result!.foodName} - Nutrition Analysis - Generated by SnapMango 2026';
 
+      if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
+        final encodedMessage = Uri.encodeComponent(message);
+        final whatsappUrl = Uri.parse('whatsapp://send?text=$encodedMessage');
+        
+        try {
+          await launchUrl(whatsappUrl);
+        } catch (e) {
+          final webUrl = Uri.parse('https://web.whatsapp.com/send?text=$encodedMessage');
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        }
+      } else {
+        final encodedMessage = Uri.encodeComponent(message);
+        final whatsappUrl = Uri.parse('https://web.whatsapp.com/send?text=$encodedMessage');
+        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to open WhatsApp: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
 
-  // NOTE: Doesn't work on pc yet
   Future<void> _shareToSelection() async {
-  try {
-    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android || defaultTargetPlatform == TargetPlatform.iOS)) {
-      // Mobile
+    try {
       final sharingContent = ShareParams(
-        text: '${_result!.foodName} - Nutrition Analysis\n\nGenerated by SnapMango 2026',
+        text: '${_result!.foodName} - Nutrition Analysis - Generated by SnapMango 2026',
         files: [XFile.fromData(
           _exportImageBytes!,
           mimeType: 'image/png',
           name: 'nutrition_report.png',
         )],
-      );
-      
-      
-    } else {
-      // Web/PC
-      final sharingContent = ShareParams(
-        text: '${_result!.foodName} - Nutrition Analysis\n\nGenerated by SnapMango 2026',
-        files: [XFile.fromData(
-          _exportImageBytes!,
-          mimeType: 'image/png',
-          name: 'nutrition_report.png',
-        )],
-      );await SharePlus.instance.share(sharingContent);
-    }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to share: $e'), backgroundColor: Colors.red),
-      );
+      ); 
+      await SharePlus.instance.share(sharingContent);
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
-}
-
 
   Widget _buildExportImage() {
     final String formattedDate = DateFormat('MMM d, yyyy • h:mm a').format(_analysisCreatedAt ?? DateTime.now());
@@ -765,13 +752,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // const Text(
-            //   "My Food Analysis",
-            //   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: kMangoPrimary),
-            // ),
-            // const SizedBox(height: 16),
-
-            // Polaroid Container
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -785,7 +765,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
               ),
               child: Column(
                 children: [
-                  // Polaroid Image Section
                   Container(
                     width: 280,
                     height: 280,
@@ -802,14 +781,13 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                     ),
                   ),
 
-                  // Polaroid Bottom Section
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Food Name
+
                         Text(
                           _result!.foodName,
                           style: const TextStyle(
@@ -822,7 +800,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                         ),
                         const SizedBox(height: 4),
 
-                        // Portion Size
+                        
                         Text(
                           "Portion: ${_result!.portionSize}",
                           style: const TextStyle(
@@ -832,8 +810,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           ),
                         ),
                         const SizedBox(height: 8),
-
-                        // Nutrition Info
+                        
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -844,8 +821,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           ],
                         ),
                         const SizedBox(height: 20),
-
-                        // Date + time created
+                        
                         Text(
                           formattedDate,
                           style: const TextStyle(
@@ -869,7 +845,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     );
   }
 
-  // Helper for _saveFood and in showSharePopUp
   Future<void> _captureExportImage() async {
     _exportImageBytes = await _screenshotController.captureFromWidget(
       _buildExportImage(),
@@ -878,4 +853,51 @@ class _ResultPageState extends ConsumerState<ResultPage> {
       context: context,
     );
   }
+
+  void _showDownloadAgainDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Download again?"),
+        content: const Text(
+          "This image has already been saved. Do you want to download it again?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _saveFood();
+            },
+            child: const Text("Download Again"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleSaveShare(BuildContext context) async {
+    if (!_hasDownloaded) {
+      await _saveFood();
+      setState(() {
+        _hasDownloaded = true;
+      });
+    }
+    _showSharePopOut(context, _exportImageBytes);
+  }
+
+  Future<void> _handleSave() async {
+    if (!_hasDownloaded) {
+      await _saveFood();
+      setState(() {
+        _hasDownloaded = true;
+      });
+    } else {
+      _showDownloadAgainDialog();
+    }
+  }
+
 }
